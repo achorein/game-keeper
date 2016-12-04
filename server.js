@@ -7,8 +7,14 @@ var app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
+var port = process.env.PORT || 7312;
+var dataDir = process.env.DATA_DIR || 'data/';
+
 var Datastore = require('nedb');
-var db = new Datastore({ filename: 'game.db', autoload: true });
+var db = new Datastore({ filename: dataDir + 'game.db', autoload: true });
+db.ensureIndex({ fieldName: 'score' }, function (err) {
+    if (err) return console.log('Ooops! ' + err);
+});
 
 app.get('/', function(req, res) {
     res.send({name:'Game Keeper', version: '1.0'});
@@ -23,7 +29,7 @@ app.get('/api/score/max', function(req, res) {
         if (err) return console.log('Ooops! ' + req.url, err);
         console.log(req.url + ': ' + JSON.stringify(value));
         if (value == null) {
-            value = {playername: '', score: 0}
+            value = {playername: 'Computer', score: 0}
         }
         res.send(value);
     });
@@ -115,6 +121,6 @@ app.post('/api/score/reset', function (req, res) {
 /**
  * LANCEMENT DU SERVEUR
  */
-app.listen(7312, function () {
-    console.log('Game server listening on port 7312 !');
+app.listen(port, function () {
+    console.log('Game server listening on port ' + port);
 });
