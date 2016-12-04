@@ -9,6 +9,7 @@ app.use(cors());
 
 var port = process.env.PORT || 7312;
 var dataDir = process.env.DATA_DIR || 'data/';
+var password = process.env.PASSWORD || 'game_keeper';
 
 var Datastore = require('nedb');
 var db = new Datastore({ filename: dataDir + 'game.db', autoload: true });
@@ -16,7 +17,7 @@ db.ensureIndex({ fieldName: 'score' }, function (err) {
     if (err) return console.log('Ooops! ' + err);
 });
 
-app.get('/', function(req, res) {
+app.get('/api', function(req, res) {
     res.send({name:'Game Keeper', version: '1.0'});
 });
 
@@ -107,7 +108,7 @@ app.put('/api/score', function (req, res) {
 // Reset de tous les scores
 app.post('/api/score/reset', function (req, res) {
     var data = req.body;
-    if (data.securitycheck == 'game-keeper') {
+    if (data.securitycheck == password) {
         db.remove({}, {multi: true}, function (err, value) {
             if (err) return console.log('Ooops! ' + req.url, err);
             console.log(req.url + ': removed ' + JSON.stringify(value));
