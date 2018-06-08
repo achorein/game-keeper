@@ -5,7 +5,8 @@ var cors = require('cors');
 var app = express();
 // parse application/json
 app.use(bodyParser.json());
-app.use(cors());
+corsOptions = (process.env.CORS) ? { origin:  process.env.CORS } : null; 
+app.use(cors(corsOptions));
 
 var port = process.env.PORT || 7312;
 var dataDir = process.env.DATA_DIR || 'data/';
