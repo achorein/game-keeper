@@ -125,3 +125,5 @@ app.post('/api/score/reset', function (req, res) {
 app.listen(port, function () {
     console.log('Game server listening on port ' + port);
 });
+
+module.exports = app; // for testing
