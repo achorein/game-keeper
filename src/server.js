@@ -12,6 +12,7 @@ var port = process.env.PORT || 7312;
 var dataDir = process.env.DATA_DIR || 'data/';
 var password = process.env.PASSWORD || 'game_keeper';
 var contextroot = process.env.CONTEXTROOT || '/api';
+if (contextroot === '/') contextroot = '';
 
 var Datastore = require('nedb');
 var db = new Datastore({ filename: dataDir + 'game.db', autoload: true });
