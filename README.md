@@ -21,5 +21,6 @@ Light node js server providing rest api for some games
 | ------------- | ------------- | -------------
 | CORS | Manage Cross-origin resource sharing | http://game.ultimateplateform.v1kings.io
 | PORT | Server port | 7312
+| CONTEXTROOT | URL context root | /api
 | DATA_DIR | Directory to store dabase file | data/
 | PASSWORD | Password used ti reset all score | game_keeper
