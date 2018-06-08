@@ -5,4 +5,4 @@ EXPOSE 7312
 
 COPY ./ /app
 
-CMD node ./app/server.js
+CMD node ./src/server.js
