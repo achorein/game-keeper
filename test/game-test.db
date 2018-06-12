@@ -1,0 +1,10 @@
+{"playername":"player3","player":"skin3","level":2,"score":2200,"date":1528808043103,"_id":"18m70H4CHe7Mqdpc"}
+{"playername":"player2","player":"skin2","level":2,"score":2100,"date":1528808037966,"_id":"1oLdkbYx1pgVkECI"}
+{"playername":"player1","player":"skin1","level":1,"score":1000,"date":1528807997289,"_id":"BCtR67ujWfvaATn4"}
+{"playername":"player2","player":"skin2","level":1,"score":1100,"date":1528808004607,"_id":"BIf6s3FIAfvFgSCp"}
+{"playername":"player3","player":"skin3","level":1,"score":1200,"date":1528808010967,"_id":"JeQcyhQXAgBboYhx"}
+{"playername":"player1","player":"skin1","level":2,"score":2000,"date":1528808031057,"_id":"KW9YGfFNxXDXHdV7"}
+{"playername":"player4","player":"skin4","level":1,"score":1300,"date":1528808017504,"_id":"RKo1Jbbx8p5bcQN0"}
+{"playername":"player5","player":"skin5","level":1,"score":1400,"date":1528808024505,"_id":"Xp5TvrbWLSS3R0tL"}
+{"playername":"player4","player":"skin4","level":2,"score":2300,"date":1528808050806,"_id":"tERNHsqHvK267nKw"}
+{"$$indexCreated":{"fieldName":"score","unique":false,"sparse":false}}

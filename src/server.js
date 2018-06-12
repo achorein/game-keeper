@@ -1,132 +1,161 @@
-var express = require('express');
-var bodyParser = require('body-parser');
-var cors = require('cors');
+// DEPENDANCIES
+const fs = require('fs');
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const Datastore = require('nedb');
 
-var app = express();
-// parse application/json
-app.use(bodyParser.json());
-corsOptions = (process.env.CORS) ? { origin:  process.env.CORS } : null; 
-app.use(cors(corsOptions));
+// CONSTANTES
+const VERSION = JSON.parse(fs.readFileSync('./package.json')).version;
+const PORT = process.env.PORT || 7312;
+const DATA_DIR = process.env.DATA_DIR || 'data/';
+const DB_FILEPATH = (process.env.NODE_ENV === 'test') ? 'test/game-test.db' : `${DATA_DIR}/game.db`;
+const PASSWORD = process.env.PASSWORD || 'game_keeper';
+const CONTEXT_ROOT = (process.env.CONTEXTROOT === '/') ? '' : process.env.CONTEXTROOT || '/api';
+const CORS_OPTIONS = (process.env.CORS) ? { origin: process.env.CORS } : null;
 
-var port = process.env.PORT || 7312;
-var dataDir = process.env.DATA_DIR || 'data/';
-var password = process.env.PASSWORD || 'game_keeper';
-var contextroot = process.env.CONTEXTROOT || '/api';
-if (contextroot === '/') contextroot = '';
+// Manage application server
+const app = express();
+app.use(bodyParser.json()); // unable auto parsing for application/json content
+app.use(cors(CORS_OPTIONS));
 
-var Datastore = require('nedb');
-var db = new Datastore({ filename: dataDir + 'game.db', autoload: true });
-db.ensureIndex({ fieldName: 'score' }, function (err) {
-    if (err) return console.log('Ooops! ' + err);
+// Manage database
+const db = new Datastore({ filename: DB_FILEPATH, autoload: true });
+db.ensureIndex({ fieldName: 'score' }, (err) => {
+  if (err) console.log('Ooops! ', err);
 });
 
-app.get(contextroot, function(req, res) {
-    res.send({name:'Game Keeper', version: '1.0'});
-});
+/* ************************************************************************
+ *  API ROUTES
+ ************************************************************************* */
 
 /**
- * SCORE GLOBAL.
+ * Home page (ex: /api)
  */
-// Récupération du highscore global
-app.get(`${contextroot}/score/max`, function(req, res) {
-    db.findOne({ score: { $exists: true }}).sort({ score: -1, date: -1 }).limit(1).exec(function(err, value) {
-        if (err) return console.log('Ooops! ' + req.url, err);
-        console.log(req.url + ': ' + JSON.stringify(value));
-        if (value == null) {
-            value = {playername: 'Computer', score: 0}
-        }
-        res.send(value);
-    });
+app.get(CONTEXT_ROOT, (req, res) => {
+  res.send({ name: 'Game Keeper', version: VERSION });
 });
 
-// Récupération des 10 meilleurs scores globaux
-app.get(`${contextroot}/score/top`, function(req, res) {
-    db.find({ score: { $exists: true }}).sort({ score: -1, date: -1 }).limit(10).exec(function(err, values) {
-        if (err) return console.log('Ooops! ' + req.url, err);
-        console.log(req.url + ': ' + JSON.stringify(values));
-        res.send(values);
-    });
-});
+
+/* **************
+ * GLOBAL SCORE
+ ************** */
 
 /**
- * SCORE PAR LEVEL.
+ * Retrieve the highscore score (all player and all level)
  */
-// Récupération du highscore pour un niveau (et pour un joueur si nécessaire)
-app.get(`${contextroot}/score/level/:level/max`, function(req, res) {
-    console.log(req.params);
-    var search = {
-        score: { $exists: true },
-        level: parseInt(req.params.level)
-    };
-    if (req.query.playername) { // parametre get ?playername=
-        search.playername = req.query.playername;
-    }
-    db.findOne(search).sort({ score: -1, date: -1 }).limit(1).exec(function(err, value) {
-        if (err) return console.log('Ooops! ' + req.url, err);
-        console.log(req.url + ': ' + JSON.stringify(value));
-        if (value == null) {
-            value = {playername: '', level: search.level, score: 0}
-        }
-        res.send(value);
-    });
-});
-
-
-/**
- * SCORE PAR JOUEUR.
- */
-// Récupération du highscore pour d'un joueur
-app.get(`${contextroot}/score/player/:playername/max`, function(req, res) {
-    db.findOne({
-        playername: req.params.playername,
-        score: { $exists: true }
-    }).sort({ score: -1, date: -1 }).limit(1).exec(function(err, value) {
-        if (err) return console.log('Ooops! ' + req.url, err);
-        console.log(req.url + ': ' + JSON.stringify(value));
-        if (value == null) {
-            value = {playername: req.params.playername, score: 0}
-        }
-        res.send(value);
+app.get(`${CONTEXT_ROOT}/score/max`, (req, res) => {
+  db.findOne({ score: { $exists: true } })
+    .sort({ score: -1, date: -1 }).limit(1)
+    .exec((err, value) => {
+      if (err) return console.log(`Ooops! ${req.url}`, err);
+      console.log(`${req.url}: ${JSON.stringify(value)}`);
+      return res.send(value || { playername: 'Computer', score: 0 });
     });
 });
 
 /**
- * MANIPULATION DES SCORES
+ * Retrieve top 10 scores (all player and all level)
  */
-// Ajout d'un nouveau score
-app.put(`${contextroot}/score`, function (req, res) {
-    var data = req.body;
-    db.insert({
-        playername: data.playername,
-        player: data.player,
-        level: data.level,
-        score: data.score,
-        date: Date.now()
-    }, function (err, value) {
-        if (err) return console.log('Ooops! ' + req.url, err);
-        res.send(value);
+app.get(`${CONTEXT_ROOT}/score/top`, (req, res) => {
+  db.find({ score: { $exists: true } })
+    .sort({ score: -1, date: -1 }).limit(10)
+    .exec((err, values) => {
+      if (err) return console.log(`Ooops! ${req.url}`, err);
+      console.log(`${req.url}: ${JSON.stringify(values)}`);
+      return res.send(values);
     });
 });
 
-// Reset de tous les scores
-app.post(`${contextroot}/score/reset`, function (req, res) {
-    var data = req.body;
-    if (data.securitycheck == password) {
-        db.remove({}, {multi: true}, function (err, value) {
-            if (err) return console.log('Ooops! ' + req.url, err);
-            console.log(req.url + ': removed ' + JSON.stringify(value));
-            res.send({removed:  value});
-        });
-    } else {
-        res.sendStatus(401);
-    }
+/* **************
+ * LEVELS SCORE
+ ************** */
+
+/**
+ * Retrieve highest score for a level (and player if needed)
+ * @param level Level number (URL Parameter)
+ * @param playername Player name (Query parameter: ?playername=)
+ */
+app.get(`${CONTEXT_ROOT}/score/level/:level/max`, (req, res) => {
+  console.log(req.params);
+  const search = {
+    score: { $exists: true },
+    level: parseInt(req.params.level, 10),
+  };
+  if (req.query.playername) {
+    search.playername = req.query.playername;
+  }
+  db.findOne(search).sort({ score: -1, date: -1 }).limit(1).exec((err, value) => {
+    if (err) return console.log(`Ooops! ${req.url}`, err);
+    console.log(`${req.url}: ${JSON.stringify(value)}`);
+    return res.send(value || { playername: '', level: search.level, score: 0 });
+  });
+});
+
+
+/* **************
+ * PLAYER SCORE
+ ************** */
+
+/**
+ * Retreive highest score for a player
+ * @param Player name (URL parameter)
+ */
+app.get(`${CONTEXT_ROOT}/score/player/:playername/max`, (req, res) => {
+  db.findOne({
+    playername: req.params.playername,
+    score: { $exists: true },
+  }).sort({ score: -1, date: -1 }).limit(1).exec((err, value) => {
+    if (err) return console.log(`Ooops! ${req.url}`, err);
+    console.log(`${req.url}: ${JSON.stringify(value)}`);
+    return res.send(value || { playername: req.params.playername, score: 0 });
+  });
+});
+
+/* **************
+ * SCORES UPDATES
+ ************** */
+
+/**
+ * Add new score
+ * @param body { "playername": "player1", "player": "skin1", "level": "1", "score": "7732" }
+ */
+app.put(`${CONTEXT_ROOT}/score`, (req, res) => {
+  const data = req.body;
+  db.insert({
+    playername: data.playername,
+    player: data.player,
+    level: data.level,
+    score: data.score,
+    date: Date.now(),
+  }, (err, value) => {
+    if (err) return console.log(`Ooops! ${req.url}`, err);
+    return res.send(value);
+  });
 });
 
 /**
- * LANCEMENT DU SERVEUR
+ * Reset all scores
+ * @param securitycheck Password header to ensure some security
  */
-app.listen(port, function () {
-    console.log(`Game server listening on port ${port}`);
+app.post(`${CONTEXT_ROOT}/score/reset`, (req, res) => {
+  const data = req.body;
+  if (data.securitycheck === PASSWORD) {
+    db.remove({}, { multi: true }, (err, value) => {
+      if (err) return console.log(`Ooops! ${req.url}`, err);
+      console.log(`${req.url}: removed ${JSON.stringify(value)}`);
+      return res.sendStatus(204);
+    });
+  } else {
+    res.sendStatus(401);
+  }
 });
 
-module.exports = app; // for testing
+/* **************
+ * SERVER START
+ ************** */
+app.listen(PORT, () => {
+  console.log(`Game server listening on port ${PORT}`);
+});
+
+module.exports = app; // needed for testing

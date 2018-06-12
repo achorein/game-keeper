@@ -5,7 +5,10 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
-    "test": "mocha --timeout 10000"
+    "start-dev": "nodemon src/server.js",
+    "lint": "eslint src/server.js",
+    "test": "nyc --reporter=html --reporter=text mocha --timeout 3000",
+    "coverage": "nyc report --reporter=text-lcov | coveralls"
   },
   "author": "Anselme Chorein",
   "license": "ISC",
@@ -17,12 +20,21 @@
     "nedb": "^1.8.0"
   },
   "devDependencies": {
-    "nodemon": "^1.17.5",
     "chai": "^3.5.0",
+    "chai-arrays": "^2.0.0",
     "chai-http": "^2.0.1",
-    "mocha": "^2.4.5"
+    "coveralls": "^3.0.1",
+    "eslint": "^4.19.1",
+    "eslint-config-airbnb-base": "^11.0.0",
+    "eslint-plugin-import": "^2.12.0",
+    "eslint-plugin-node": "^6.0.1",
+    "eslint-plugin-promise": "^3.8.0",
+    "eslint-plugin-standard": "^3.1.0",
+    "mocha": "^2.4.5",
+    "nodemon": "^1.17.5",
+    "nyc": "^12.0.2"
   },
-  "engines" : { 
-    "node" : "~8.9.0"
+  "engines": {
+    "node": "~8.9.0"
   }
 }

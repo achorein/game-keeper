@@ -9,6 +9,7 @@ install:
   - npm install
 
 after_success:
+  - npm run coverage
   - docker build -t achorein/game-keeper .
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
   - docker push achorein/game-keeper

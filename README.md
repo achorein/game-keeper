@@ -12,8 +12,8 @@ Light node js server providing rest api for some games
 | GET /api/score/top | 
 | GET /api/score/level/(level)/max |
 | GET /api/score/player/(playername)/max  | 
-| PUT /api/score' | { playername: 'player1', player: 'skin1', level: 1, score: 7732 }
-| POST /api/score/reset | { securitycheck: 'password'}
+| PUT /api/score | { "playername": "player1", "player": "skin1", "level": 1, "score": 7732 }
+| POST /api/score/reset | { "securitycheck": "password"}
 
 # Envrionnement variable
 

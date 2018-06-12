@@ -3,3 +3,6 @@ logs
 node_modules
 yarn.lock
 game.db
+.vscode
+.nyc_output
+coverage
